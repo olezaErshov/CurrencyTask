@@ -25,6 +25,10 @@ func InitRoutes(h *Handler) *gin.Engine {
 		{
 			auth.POST("/sign-in", h.signIn)
 		}
+		currency := api.Group("/currency")
+		{
+			currency.GET("/currency", h.authMiddleware(), h.GetCurrency)
+		}
 	}
 	return router
 }

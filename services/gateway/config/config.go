@@ -14,7 +14,7 @@ type Config struct {
 }
 
 func NewConfig() (Config, error) {
-	viper.AddConfigPath("./gateway/cmd")
+	viper.AddConfigPath("./services/gateway/cmd")
 	viper.SetConfigName("config")
 	err := viper.ReadInConfig()
 	if err != nil {
