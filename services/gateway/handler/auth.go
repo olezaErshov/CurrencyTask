@@ -36,20 +36,22 @@ func (h Handler) signIn(c *gin.Context) {
 
 	resp, err := http.Get(url)
 	if err != nil {
-		log.Fatalf("Ошибка при выполнении запроса: %v", err)
+		log.Println(err)
+		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
+		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		log.Println(err)
-		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
+		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Println(err)
-		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
+		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
 
