@@ -8,19 +8,14 @@ import (
 	"net/http"
 )
 
-type dateRequest struct {
-	Date string `json:"date"`
-}
-
 func (h Handler) RateByDay(c *gin.Context) {
-	var input dateRequest
-	if err := c.ShouldBind(&input); err != nil {
-		log.Println(err)
+	date := c.Query("date")
+	if date == "" {
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
-	exchangeRate, err := h.service.GetCurrencyByDate(context.TODO(), input.Date)
+	exchangeRate, err := h.service.GetCurrencyByDate(context.TODO(), date)
 	if err != nil {
 		log.Println(err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
@@ -44,20 +39,20 @@ func (h Handler) RateByDay(c *gin.Context) {
 	}
 }
 
-type IntervalRequest struct {
-	FirstDate string `json:"first_date"`
-	LastDate  string `json:"last_date"`
-}
-
 func (h Handler) RateByDaysInterval(c *gin.Context) {
-	var input IntervalRequest
-	if err := c.ShouldBind(&input); err != nil {
-		log.Println(err)
+	firstDate := c.Query("first_date")
+	if firstDate == "" {
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
-	exchangeRateHistory, err := h.service.GetRateHistory(context.TODO(), input.FirstDate, input.LastDate)
+	lastDate := c.Query("last_date")
+	if lastDate == "" {
+		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
+		return
+	}
+
+	exchangeRateHistory, err := h.service.GetRateHistory(context.TODO(), firstDate, lastDate)
 	if err != nil {
 		log.Println(err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
