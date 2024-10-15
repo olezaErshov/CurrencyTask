@@ -39,6 +39,45 @@ func (r repository) GetCurrencyByDate(ctx context.Context, date string) (float32
 	return rate, nil
 }
 
+func (r repository) GetRateHistory(ctx context.Context, firstDate, lastDate string) ([]entity.Currency, error) {
+	var (
+		rate float32
+		date string
+	)
+	tx, err := r.postgres.Begin()
+	if err != nil {
+		return nil, err
+	}
+
+	go func() {
+		if err != nil {
+			tx.Rollback()
+		}
+	}()
+
+	query := "SELECT rate,date FROM currency WHERE date BETWEEN $1 AND $2"
+
+	rows, err := r.postgres.Query(query, firstDate, lastDate)
+	if err != nil {
+		return nil, err
+	}
+
+	exchangeRateHistory := make([]entity.Currency, 0)
+	for rows.Next() {
+		err = rows.Scan(&rate, &date)
+		if err != nil {
+			return nil, err
+		}
+		exchangeRateHistory = append(exchangeRateHistory, entity.Currency{Rate: rate, Date: date})
+	}
+
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return exchangeRateHistory, nil
+}
+
 func (r repository) SaveTodaysCurrency(ctx context.Context, currency entity.Currency) error {
 	tx, err := r.postgres.Begin()
 	if err != nil {
