@@ -10,3 +10,7 @@ postgres:
   dbname: "postgres"
   password: "postgres"
   sslmode: "disable"
+
+worker:
+  external_api: "https://latest.currency-api.pages.dev/v1/currencies/rub.json"
+  fetching_on_start: "True"

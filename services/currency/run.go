@@ -25,6 +25,9 @@ func Run() {
 
 	r := repository.NewRepository(db)
 	s := service.NewService(r)
+	w := service.NewWorker(s, cfg.Worker)
+	w.Start()
+
 	h := handler.NewHandler(s)
 	router := handler.InitRoutes(&h)
 

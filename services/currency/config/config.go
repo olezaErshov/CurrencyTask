@@ -16,9 +16,15 @@ type DBConfig struct {
 	SSLMode  string
 }
 
+type WorkerConfig struct {
+	ExternalUrl     string
+	FetchingOnStart bool
+}
+
 type Config struct {
 	DB     DBConfig
 	Server ServerConfig
+	Worker WorkerConfig
 }
 
 func NewConfig() (Config, error) {
@@ -41,6 +47,10 @@ func NewConfig() (Config, error) {
 		Server: ServerConfig{
 			Host: viper.GetString("server.host"),
 			Port: viper.GetInt("server.port"),
+		},
+		Worker: WorkerConfig{
+			ExternalUrl:     viper.GetString("worker.external_api"),
+			FetchingOnStart: viper.GetBool("worker.fetching_on_start"),
 		},
 	}, nil
 }
