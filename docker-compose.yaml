@@ -6,3 +6,19 @@ services:
     environment:
       AUTH_TOKEN_LIFETIME: 100
     platform: linux/arm64/v8
+
+  postgres:
+    hostname: db
+    container_name: db
+    image: "postgres:12"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "postgres"
+      POSTGRES_DB: "postgres"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata: { }
