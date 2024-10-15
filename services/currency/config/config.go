@@ -28,7 +28,7 @@ type Config struct {
 }
 
 func NewConfig() (Config, error) {
-	viper.AddConfigPath("./services/currency/cmd")
+	viper.AddConfigPath("config")
 	viper.SetConfigName("config")
 	err := viper.ReadInConfig()
 	if err != nil {

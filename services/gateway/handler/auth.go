@@ -32,7 +32,7 @@ func (h Handler) signIn(c *gin.Context) {
 		}
 	}
 
-	url := fmt.Sprintf("http://localhost:8082/generate?login=%s", user.Login)
+	url := fmt.Sprintf("http://0.0.0.0:8080/generate?login=%s", user.Login)
 
 	resp, err := http.Get(url)
 	if err != nil {

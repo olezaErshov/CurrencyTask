@@ -2,7 +2,6 @@ package repository
 
 import (
 	"CurrencyTask/services/currency/entity"
-	"CurrencyTask/services/gateway/errorsx"
 	"context"
 	"database/sql"
 	"errors"
@@ -27,8 +26,8 @@ func (r repository) GetCurrencyByDate(ctx context.Context, date string) (float32
 
 	if err = row.Scan(&rate); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return 0, errorsx.UserDoesNotExistError
-		}
+			return 0, err
+		} // TODO create custom error
 		return 0, err
 	}
 
