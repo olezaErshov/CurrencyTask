@@ -23,6 +23,7 @@ func (h Handler) GetCurrency(c *gin.Context) {
 
 	date := c.Query("date")
 	if date == "" {
+		log.Println("GetCurrency handler error: date is empty")
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
@@ -30,20 +31,20 @@ func (h Handler) GetCurrency(c *gin.Context) {
 
 	resp, err := GetRateInCurrenService(ctx, date)
 	if err != nil {
-		log.Println(err)
+		log.Println("GetCurrency handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 	serviceResponse.Rate, err = strconv.ParseFloat(string(resp), 64) //TODO надо красиво вернуть в виде rate:12301 и написать метод, предотвращающий повторную запись в бд по несколько раз на дню
 	if err != nil {
-		log.Println(err)
+		log.Println("GetCurrency handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
 	j, err := json.Marshal(serviceResponse)
 	if err != nil {
-		log.Println("SignUp handler error:", err)
+		log.Println("GetCurrency handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
@@ -52,7 +53,7 @@ func (h Handler) GetCurrency(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 	_, err = c.Writer.Write(j)
 	if err != nil {
-		log.Println("GetRateByDay handler error:", err)
+		log.Println("GetCurrency handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
@@ -91,19 +92,21 @@ func (h Handler) GetRateHistory(c *gin.Context) {
 
 	firstDate := c.Query("first_date")
 	if firstDate == "" {
+		log.Println("GetRateHistory handler error: first_date is empty")
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
 	lastDate := c.Query("last_date")
 	if lastDate == "" {
+		log.Println("GetRateHistory handler error: last_date is empty")
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
 	resp, err := GetRateHistoryInCurrenService(ctx, firstDate, lastDate)
 	if err != nil {
-		log.Println(err)
+		log.Println("GetRateHistory handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}

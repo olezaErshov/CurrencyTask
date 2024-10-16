@@ -78,7 +78,7 @@ func (w *Worker) getCurrencyData() {
 	currencyData.Date = currencyResp.Date
 
 	err = w.currencyService.SaveTodaysCurrency(context.TODO(), currencyData)
-	log.Println("data was pulled successfully")
+	log.Println("data was gotten successfully")
 	if err != nil {
 		return
 	}

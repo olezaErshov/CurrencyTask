@@ -24,7 +24,7 @@ func InitRoutes(h *Handler) *gin.Engine {
 		trips := api.Group("/rate")
 		{
 			trips.GET("/date", h.RateByDay)
-			trips.GET("/history", h.RateByDaysInterval)
+			trips.GET("/history", h.RateHistory)
 		}
 
 	}

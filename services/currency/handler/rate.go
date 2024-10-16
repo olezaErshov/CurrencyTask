@@ -16,6 +16,7 @@ func (h Handler) RateByDay(c *gin.Context) {
 
 	date := c.Query("date")
 	if date == "" {
+		log.Println("date is empty")
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
@@ -26,7 +27,7 @@ func (h Handler) RateByDay(c *gin.Context) {
 			errorText(c.Writer, "time limit exceeded", http.StatusInternalServerError)
 			return
 		}
-		log.Println(err)
+		log.Println("RateByDaysInterval handler err:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
@@ -48,18 +49,20 @@ func (h Handler) RateByDay(c *gin.Context) {
 	}
 }
 
-func (h Handler) RateByDaysInterval(c *gin.Context) {
+func (h Handler) RateHistory(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c, requestExpiredInSeconds*time.Second)
 	defer cancel()
 
 	firstDate := c.Query("first_date")
 	if firstDate == "" {
+		log.Println("RateByDaysInterval handler err: first_date is empty")
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
 	lastDate := c.Query("last_date")
 	if lastDate == "" {
+		log.Println("RateByDaysInterval handler err: last_date is empty")
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
@@ -70,14 +73,14 @@ func (h Handler) RateByDaysInterval(c *gin.Context) {
 			errorText(c.Writer, "time limit exceeded", http.StatusInternalServerError)
 			return
 		}
-		log.Println(err)
+		log.Println("RateByDaysInterval handler err:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
 	j, err := json.Marshal(exchangeRateHistory)
 	if err != nil {
-		log.Println("GetRateByDay handler error:", err)
+		log.Println("RateByDaysInterval handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
@@ -86,7 +89,7 @@ func (h Handler) RateByDaysInterval(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 	_, err = c.Writer.Write(j)
 	if err != nil {
-		log.Println("GetRateByDay handler error:", err)
+		log.Println("RateByDaysInterval handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
 		return
 	}

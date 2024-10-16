@@ -24,7 +24,7 @@ func (h Handler) signIn(c *gin.Context) {
 
 	var input entity.User
 	if err := c.ShouldBind(&input); err != nil {
-		log.Println(err)
+		log.Println("SignIn handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
@@ -33,7 +33,7 @@ func (h Handler) signIn(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, errorsx.UserDoesNotExistError):
-			errorText(c.Writer, "User not found", http.StatusInternalServerError)
+			errorText(c.Writer, "User not found", http.StatusNotFound)
 			return
 		default:
 			log.Println("SignIn handler error:", err)
@@ -55,7 +55,7 @@ func (h Handler) signIn(c *gin.Context) {
 
 	j, err := json.Marshal(response)
 	if err != nil {
-		log.Println("SignUp handler error:", err)
+		log.Println("SignIn handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
@@ -80,13 +80,13 @@ func requestInAuthService(ctx context.Context, url string) ([]byte, error) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		log.Println(err)
+		log.Println("requestInAuthService error:", err)
 		return nil, err
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		log.Println(err)
+		log.Println("requestInAuthService error:", err)
 		return nil, err
 	}
 	return body, nil
