@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 )
@@ -14,7 +15,8 @@ type Worker struct {
 	currencyService Servicer
 	externalURL     string
 	RunImmediately  bool
-	RunTime         time.Time
+	RunTimeHour     int
+	RunTimeMinute   int
 }
 
 func NewWorker(currencyService Servicer, workerConfig config.WorkerConfig) *Worker {
@@ -22,12 +24,14 @@ func NewWorker(currencyService Servicer, workerConfig config.WorkerConfig) *Work
 		currencyService: currencyService,
 		externalURL:     workerConfig.ExternalUrl,
 		RunImmediately:  workerConfig.FetchingOnStart,
+		RunTimeHour:     workerConfig.RuntimeHour,
+		RunTimeMinute:   workerConfig.RuntimeMinute,
 	}
 }
 
-func (w *Worker) Start() {
+func (w *Worker) Run() {
 	if w.RunImmediately {
-		go w.pullData()
+		go w.getCurrencyData()
 	}
 
 	go func() {
@@ -36,13 +40,13 @@ func (w *Worker) Start() {
 
 			time.Sleep(time.Until(nextRun))
 
-			go w.pullData()
+			go w.getCurrencyData()
 		}
 	}()
 }
 
 func (w *Worker) getNextRunTime(currentTime time.Time) time.Time {
-	nextRun := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), w.RunTime.Hour(), w.RunTime.Minute(), 0, 0, currentTime.Location())
+	nextRun := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), w.RunTimeHour, w.RunTimeMinute, 0, 0, currentTime.Location())
 
 	if currentTime.After(nextRun) {
 		nextRun = nextRun.Add(24 * time.Hour)
@@ -51,7 +55,7 @@ func (w *Worker) getNextRunTime(currentTime time.Time) time.Time {
 	return nextRun
 }
 
-func (w *Worker) pullData() {
+func (w *Worker) getCurrencyData() {
 	url := fmt.Sprintf(w.externalURL)
 
 	resp, err := http.Get(url)
@@ -74,6 +78,7 @@ func (w *Worker) pullData() {
 	currencyData.Date = currencyResp.Date
 
 	err = w.currencyService.SaveTodaysCurrency(context.TODO(), currencyData)
+	log.Println("data was pulled successfully")
 	if err != nil {
 		return
 	}

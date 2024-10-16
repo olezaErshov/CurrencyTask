@@ -1,31 +1,64 @@
 package handler
 
 import (
-	"fmt"
+	"CurrencyTask/services/gateway/errorsx"
+	"context"
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"io"
 	"log"
 	"net/http"
 	"net/url"
+	"strconv"
+	"time"
 )
 
+type rateResponse struct {
+	Rate float64 `json:"rate"`
+}
+
 func (h Handler) GetCurrency(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, requestExpiredInSeconds*time.Second)
+	defer cancel()
+
 	date := c.Query("date")
 	if date == "" {
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
+	var serviceResponse rateResponse
 
-	resp, err := GetRateInCurrenService(date)
+	resp, err := GetRateInCurrenService(ctx, date)
 	if err != nil {
 		log.Println(err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
-	c.Data(http.StatusOK, "application/json", resp)
+	serviceResponse.Rate, err = strconv.ParseFloat(string(resp), 64) //TODO надо красиво вернуть в виде rate:12301 и написать метод, предотвращающий повторную запись в бд по несколько раз на дню
+	if err != nil {
+		log.Println(err)
+		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
+		return
+	}
+
+	j, err := json.Marshal(serviceResponse)
+	if err != nil {
+		log.Println("SignUp handler error:", err)
+		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
+
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(http.StatusOK)
+	_, err = c.Writer.Write(j)
+	if err != nil {
+		log.Println("GetRateByDay handler error:", err)
+		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
+		return
+	}
 }
 
-func GetRateInCurrenService(date string) ([]byte, error) {
+func GetRateInCurrenService(ctx context.Context, date string) ([]byte, error) {
 	serviceURL, err := url.Parse("http://currency:8001/api/v1/rate/date")
 	if err != nil {
 		return nil, err
@@ -35,14 +68,13 @@ func GetRateInCurrenService(date string) ([]byte, error) {
 	queryParams.Set("date", date)
 	serviceURL.RawQuery = queryParams.Encode()
 
-	resp, err := http.Get(serviceURL.String())
+	resp, err := executeRequest(ctx, "GET", serviceURL.String())
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("external service returned non-OK status: %d", resp.StatusCode)
+		return nil, errorsx.CurrencyServiceError
 	}
 
 	body, err := io.ReadAll(resp.Body)
@@ -54,6 +86,9 @@ func GetRateInCurrenService(date string) ([]byte, error) {
 }
 
 func (h Handler) GetRateHistory(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, requestExpiredInSeconds*time.Second)
+	defer cancel()
+
 	firstDate := c.Query("first_date")
 	if firstDate == "" {
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
@@ -66,7 +101,7 @@ func (h Handler) GetRateHistory(c *gin.Context) {
 		return
 	}
 
-	resp, err := GetRateHistoryInCurrenService(firstDate, lastDate)
+	resp, err := GetRateHistoryInCurrenService(ctx, firstDate, lastDate)
 	if err != nil {
 		log.Println(err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
@@ -75,8 +110,8 @@ func (h Handler) GetRateHistory(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", resp)
 }
 
-func GetRateHistoryInCurrenService(firstDate, lastDate string) ([]byte, error) {
-	serviceURL, err := url.Parse("http://currency:8001/api/v1/rate/history")
+func GetRateHistoryInCurrenService(ctx context.Context, firstDate, lastDate string) ([]byte, error) {
+	serviceURL, err := url.Parse("http://currency:8001/api/v1/rate/history") //TODO занести эту строку или целиков в конфиг или по частям
 	if err != nil {
 		return nil, err
 	}
@@ -86,14 +121,13 @@ func GetRateHistoryInCurrenService(firstDate, lastDate string) ([]byte, error) {
 	queryParams.Set("last_date", lastDate)
 	serviceURL.RawQuery = queryParams.Encode()
 
-	resp, err := http.Get(serviceURL.String())
+	resp, err := executeRequest(ctx, "GET", serviceURL.String())
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("external service returned non-OK status: %d", resp.StatusCode)
+		return nil, errorsx.CurrencyServiceError
 	}
 
 	body, err := io.ReadAll(resp.Body)

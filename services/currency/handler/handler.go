@@ -9,6 +9,10 @@ type Handler struct {
 	service service.Servicer
 }
 
+const (
+	requestExpiredInSeconds = 2
+)
+
 func NewHandler(service service.Servicer) Handler {
 	return Handler{service: service}
 }

@@ -19,6 +19,8 @@ type DBConfig struct {
 type WorkerConfig struct {
 	ExternalUrl     string
 	FetchingOnStart bool
+	RuntimeHour     int
+	RuntimeMinute   int
 }
 
 type Config struct {
@@ -51,6 +53,8 @@ func NewConfig() (Config, error) {
 		Worker: WorkerConfig{
 			ExternalUrl:     viper.GetString("worker.external_api"),
 			FetchingOnStart: viper.GetBool("worker.fetching_on_start"),
+			RuntimeHour:     viper.GetInt("worker.runtime_hour"),
+			RuntimeMinute:   viper.GetInt("worker.runtime_minute"),
 		},
 	}, nil
 }

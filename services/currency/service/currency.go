@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func (s service) GetCurrencyByDate(ctx context.Context, date string) (float32, error) {
+func (s service) GetCurrencyByDate(ctx context.Context, date string) (float64, error) {
 	rate, err := s.repository.GetCurrencyByDate(ctx, date)
 	if err != nil {
 		log.Println(err)

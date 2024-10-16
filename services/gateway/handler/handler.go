@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	authHeader = "Authorization"
+	authHeader              = "Authorization"
+	requestExpiredInSeconds = 2
 )
 
 type Handler struct {

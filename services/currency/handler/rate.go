@@ -3,20 +3,29 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"time"
 )
 
 func (h Handler) RateByDay(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, requestExpiredInSeconds*time.Second)
+	defer cancel()
+
 	date := c.Query("date")
 	if date == "" {
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
-	exchangeRate, err := h.service.GetCurrencyByDate(context.TODO(), date)
+	exchangeRate, err := h.service.GetCurrencyByDate(ctx, date)
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			errorText(c.Writer, "time limit exceeded", http.StatusInternalServerError)
+			return
+		}
 		log.Println(err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
@@ -40,6 +49,9 @@ func (h Handler) RateByDay(c *gin.Context) {
 }
 
 func (h Handler) RateByDaysInterval(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, requestExpiredInSeconds*time.Second)
+	defer cancel()
+
 	firstDate := c.Query("first_date")
 	if firstDate == "" {
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
@@ -52,8 +64,12 @@ func (h Handler) RateByDaysInterval(c *gin.Context) {
 		return
 	}
 
-	exchangeRateHistory, err := h.service.GetRateHistory(context.TODO(), firstDate, lastDate)
+	exchangeRateHistory, err := h.service.GetRateHistory(ctx, firstDate, lastDate)
 	if err != nil {
+		if errors.Is(err, context.DeadlineExceeded) {
+			errorText(c.Writer, "time limit exceeded", http.StatusInternalServerError)
+			return
+		}
 		log.Println(err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
