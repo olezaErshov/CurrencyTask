@@ -6,7 +6,8 @@ import (
 )
 
 const (
-	authHeader = "Authorization"
+	authHeader              = "Authorization"
+	requestExpiredInSeconds = 2
 )
 
 type Handler struct {
@@ -27,7 +28,8 @@ func InitRoutes(h *Handler) *gin.Engine {
 		}
 		currency := api.Group("/currency")
 		{
-			currency.GET("/currency", h.authMiddleware(), h.GetCurrency)
+			currency.GET("/rate", h.authMiddleware(), h.GetCurrency)
+			currency.GET("/history", h.authMiddleware(), h.GetRateHistory)
 		}
 	}
 	return router

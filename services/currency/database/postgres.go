@@ -23,7 +23,7 @@ func NewDB(cfg config.DBConfig) (*sqlx.DB, error) {
 	return db, nil
 }
 func applyMigrations(db *sqlx.DB) error {
-	if err := goose.Up(db.DB, "services/currency/database/migrations"); err != nil {
+	if err := goose.Up(db.DB, "./migrations"); err != nil {
 		log.Println("Error applying migrations")
 		return err
 	}

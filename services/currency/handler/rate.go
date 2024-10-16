@@ -3,26 +3,31 @@ package handler
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+	"time"
 )
 
-type dateRequest struct {
-	Date string `json:"date"`
-}
-
 func (h Handler) RateByDay(c *gin.Context) {
-	var input dateRequest
-	if err := c.ShouldBind(&input); err != nil {
-		log.Println(err)
+	ctx, cancel := context.WithTimeout(c, requestExpiredInSeconds*time.Second)
+	defer cancel()
+
+	date := c.Query("date")
+	if date == "" {
+		log.Println("date is empty")
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
-	exchangeRate, err := h.service.GetCurrencyByDate(context.TODO(), input.Date)
+	exchangeRate, err := h.service.GetCurrencyByDate(ctx, date)
 	if err != nil {
-		log.Println(err)
+		if errors.Is(err, context.DeadlineExceeded) {
+			errorText(c.Writer, "time limit exceeded", http.StatusInternalServerError)
+			return
+		}
+		log.Println("RateByDaysInterval handler err:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
@@ -44,29 +49,38 @@ func (h Handler) RateByDay(c *gin.Context) {
 	}
 }
 
-type IntervalRequest struct {
-	FirstDate string `json:"first_date"`
-	LastDate  string `json:"last_date"`
-}
+func (h Handler) RateHistory(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c, requestExpiredInSeconds*time.Second)
+	defer cancel()
 
-func (h Handler) RateByDaysInterval(c *gin.Context) {
-	var input IntervalRequest
-	if err := c.ShouldBind(&input); err != nil {
-		log.Println(err)
+	firstDate := c.Query("first_date")
+	if firstDate == "" {
+		log.Println("RateByDaysInterval handler err: first_date is empty")
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
-	exchangeRateHistory, err := h.service.GetRateHistory(context.TODO(), input.FirstDate, input.LastDate)
+	lastDate := c.Query("last_date")
+	if lastDate == "" {
+		log.Println("RateByDaysInterval handler err: last_date is empty")
+		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
+		return
+	}
+
+	exchangeRateHistory, err := h.service.GetRateHistory(ctx, firstDate, lastDate)
 	if err != nil {
-		log.Println(err)
+		if errors.Is(err, context.DeadlineExceeded) {
+			errorText(c.Writer, "time limit exceeded", http.StatusInternalServerError)
+			return
+		}
+		log.Println("RateByDaysInterval handler err:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
 		return
 	}
 
 	j, err := json.Marshal(exchangeRateHistory)
 	if err != nil {
-		log.Println("GetRateByDay handler error:", err)
+		log.Println("RateByDaysInterval handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
 		return
 	}
@@ -75,7 +89,7 @@ func (h Handler) RateByDaysInterval(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 	_, err = c.Writer.Write(j)
 	if err != nil {
-		log.Println("GetRateByDay handler error:", err)
+		log.Println("RateByDaysInterval handler error:", err)
 		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
 		return
 	}

@@ -18,7 +18,7 @@ func (h Handler) authMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		url := fmt.Sprintf("http://localhost:8082/validate")
+		url := fmt.Sprintf("http://auth-generator:8080/validate")
 
 		req, err := http.NewRequest("GET", url, nil)
 		if err != nil {
@@ -48,7 +48,6 @@ func (h Handler) authMiddleware() gin.HandlerFunc {
 		switch resp.StatusCode {
 		case http.StatusOK:
 			log.Println("auth middleware: everything is ok")
-			c.JSON(http.StatusOK, gin.H{"token": string(body)})
 			return
 		case http.StatusBadRequest:
 			log.Println("auth middleware error:", err)

@@ -4,7 +4,7 @@ server:
 
 
 postgres:
-  host: "0.0.0.0"
+  host: "postgres"
   port: 5432
   user: "postgres"
   dbname: "postgres"
@@ -14,3 +14,6 @@ postgres:
 worker:
   external_api: "https://latest.currency-api.pages.dev/v1/currencies/rub.json"
   fetching_on_start: "True"
+  runtime_hour: 10
+  runtime_minute: 0
+
