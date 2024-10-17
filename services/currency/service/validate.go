@@ -13,22 +13,22 @@ func validateDate(date string) error {
 	return nil
 }
 
-func validateDates(firstDateStr, lastDateStr string) (bool, error) {
+func validateDates(firstDateStr, lastDateStr string) error {
 	layout := "2006-01-02"
 
 	firstDate, err := time.Parse(layout, firstDateStr)
 	if err != nil {
-		return false, errorsx.WrongDateFormatError
+		return errorsx.WrongDateFormatError
 	}
 
 	lastDate, err := time.Parse(layout, lastDateStr)
 	if err != nil {
-		return false, errorsx.WrongDateFormatError
+		return errorsx.WrongDateFormatError
 	}
 
 	if !firstDate.Before(lastDate) {
-		return false, errorsx.FirstDateEqualOrHigherThenLastDateError
+		return errorsx.FirstDateEqualOrHigherThenLastDateError
 	}
 
-	return true, nil
+	return nil
 }

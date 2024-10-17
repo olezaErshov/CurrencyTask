@@ -33,18 +33,7 @@ func (h Handler) GetRateHistory(c *gin.Context) {
 	defer cancel()
 
 	firstDate := c.Query("first_date")
-	if firstDate == "" {
-		log.Println("getRateHistory handler error: first_date is empty")
-		errorText(c.Writer, "something went wrong", http.StatusBadRequest)
-		return
-	}
-
 	lastDate := c.Query("last_date")
-	if lastDate == "" {
-		log.Println("getRateHistory handler error: last_date is empty")
-		errorText(c.Writer, "something went wrong", http.StatusBadRequest)
-		return
-	}
 
 	currencyUrl := fmt.Sprintf("%s/rate/history", h.cfg.CurrencyService)
 

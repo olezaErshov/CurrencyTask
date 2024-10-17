@@ -22,8 +22,8 @@ func (s service) GetCurrencyByDate(ctx context.Context, date string) (float64, e
 }
 
 func (s service) GetRateHistory(ctx context.Context, firstDate, lastDate string) ([]entity.Currency, error) {
-	isValid, err := validateDates(firstDate, lastDate)
-	if err != nil || isValid == false {
+	err := validateDates(firstDate, lastDate)
+	if err != nil {
 		return nil, err
 	}
 
