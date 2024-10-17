@@ -1,14 +1,14 @@
-package handler
+package service
 
 import (
-	"CurrencyTask/services/gateway/errorsx"
+	"CurrencyTask/services/currency/errorsx"
 	"time"
 )
 
 func validateDate(date string) error {
 	_, err := time.Parse("2006-01-02", date)
 	if err != nil {
-		return err
+		return errorsx.WrongDateFormatError
 	}
 	return nil
 }

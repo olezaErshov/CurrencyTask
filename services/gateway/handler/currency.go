@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"CurrencyTask/services/gateway/errorsx"
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -19,13 +17,6 @@ func (h Handler) GetRate(c *gin.Context) {
 	defer cancel()
 
 	date := c.Query("date")
-	err := validateDate(date)
-	if err != nil {
-		log.Println("getCurrency handler error: date must be in format YYYY-MM-DD")
-		errorText(c.Writer, "wrong date format. Date must be in format YYYY-MM-DD", http.StatusBadRequest)
-		return
-	}
-
 	currencyUrl := fmt.Sprintf("%s/rate/date", h.cfg.CurrencyService)
 
 	resp, statusCode, err := GetRateInCurrenService(ctx, currencyUrl, date)
@@ -53,19 +44,6 @@ func (h Handler) GetRateHistory(c *gin.Context) {
 		log.Println("getRateHistory handler error: last_date is empty")
 		errorText(c.Writer, "something went wrong", http.StatusBadRequest)
 		return
-	}
-
-	if isValid, err := validateDates(firstDate, lastDate); err != nil || isValid == false {
-		switch {
-		case errors.Is(err, errorsx.FirstDateEqualOrHigherThenLastDateError):
-			log.Println("getRateHistory handler error: first date equal or higher than last date:", err)
-			errorText(c.Writer, "first date equal or higher than last date", http.StatusBadRequest)
-			return
-		case errors.Is(err, errorsx.WrongDateFormatError):
-			log.Println("getRateHistory handler error: wrong date format:", err)
-			errorText(c.Writer, "wrong date format. Date must be in format YYYY-MM-DD", http.StatusBadRequest)
-			return
-		}
 	}
 
 	currencyUrl := fmt.Sprintf("%s/rate/history", h.cfg.CurrencyService)
