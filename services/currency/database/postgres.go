@@ -3,10 +3,11 @@ package database
 import (
 	"CurrencyTask/services/currency/config"
 	"fmt"
+	"log"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/pressly/goose/v3"
-	"log"
 )
 
 func NewDB(cfg config.DBConfig) (*sqlx.DB, error) {

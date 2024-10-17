@@ -2,6 +2,7 @@ package repository
 
 import (
 	"CurrencyTask/services/currency/service"
+
 	"github.com/jmoiron/sqlx"
 )
 

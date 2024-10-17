@@ -1,3 +1,7 @@
 server:
   host: "0.0.0.0"
   port: 8000
+
+url:
+  auth_generator: "http://auth-generator:8080"
+  currency_service: "http://currency:8001/api/v1"

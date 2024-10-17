@@ -2,7 +2,10 @@ package repository
 
 import (
 	"CurrencyTask/services/currency/entity"
+	"CurrencyTask/services/currency/errorsx"
 	"context"
+	"database/sql"
+	"errors"
 )
 
 func (r repository) GetCurrencyByDate(ctx context.Context, date string) (float64, error) {
@@ -23,6 +26,9 @@ func (r repository) GetCurrencyByDate(ctx context.Context, date string) (float64
 	row := tx.QueryRowContext(ctx, query, date)
 
 	if err = row.Scan(&rate); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, errorsx.RateDoesNotExistError
+		}
 		return 0, err
 	}
 
@@ -84,7 +90,7 @@ func (r repository) SaveTodaysCurrency(ctx context.Context, currency entity.Curr
 		}
 	}()
 
-	query := "INSERT INTO currency (rate,name , date) VALUES ($1,'usd',$2) RETURNING id"
+	query := "INSERT INTO currency (rate, name, date) VALUES ($1,'usd',$2) RETURNING id"
 	row := tx.QueryRowContext(ctx, query, currency.Rate, currency.Date)
 
 	if err = row.Err(); err != nil {
