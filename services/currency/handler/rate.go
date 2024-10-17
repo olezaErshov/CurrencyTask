@@ -23,13 +23,17 @@ func (h Handler) RateByDay(c *gin.Context) {
 	date := c.Query("date")
 	if date == "" {
 		log.Println("date is empty")
-		errorText(c.Writer, "something went wrong", http.StatusBadRequest)
+		errorText(c.Writer, "date query parameter is empty", http.StatusBadRequest)
 		return
 	}
 
 	exchangeRate, err := h.service.GetCurrencyByDate(ctx, date)
 	if err != nil {
 		switch {
+		case errors.Is(err, errorsx.WrongDateFormatError):
+			log.Println("getRateByDay handler error: wrong date format:", err)
+			errorText(c.Writer, "wrong date format. Date must be in format YYYY-MM-DD", http.StatusBadRequest)
+			return
 		case errors.Is(err, errorsx.RateDoesNotExistError):
 			errorText(c.Writer, "rate from this date doesn't exist", http.StatusNotFound)
 			return
@@ -67,20 +71,28 @@ func (h Handler) RateHistory(c *gin.Context) {
 	firstDate := c.Query("first_date")
 	if firstDate == "" {
 		log.Println("rateHistory handler err: first_date is empty")
-		errorText(c.Writer, "something went wrong", http.StatusBadRequest)
+		errorText(c.Writer, "first_date query parameter is empty", http.StatusBadRequest)
 		return
 	}
 
 	lastDate := c.Query("last_date")
 	if lastDate == "" {
 		log.Println("rateHistory handler err: last_date is empty")
-		errorText(c.Writer, "something went wrong", http.StatusBadRequest)
+		errorText(c.Writer, "last_date query parameter is empty", http.StatusBadRequest)
 		return
 	}
 
 	exchangeRateHistory, err := h.service.GetRateHistory(ctx, firstDate, lastDate)
 	if err != nil {
 		switch {
+		case errors.Is(err, errorsx.FirstDateEqualOrHigherThenLastDateError):
+			log.Println("rateHistory handler error: first date equal or higher than last date:", err)
+			errorText(c.Writer, "first date equal or higher than last date", http.StatusBadRequest)
+			return
+		case errors.Is(err, errorsx.WrongDateFormatError):
+			log.Println("rateHistory handler error: wrong date format:", err)
+			errorText(c.Writer, "wrong date format. Date must be in format YYYY-MM-DD", http.StatusBadRequest)
+			return
 		case errors.Is(err, errorsx.RateDoesNotExistError):
 			errorText(c.Writer, "rate from this date doesn't exist", http.StatusNotFound)
 			return

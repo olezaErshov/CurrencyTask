@@ -21,7 +21,7 @@ If everything is fine  you can go ahead and ran the app. If don't you need to in
 
 ## Endpoints:
 
-1. http://0.0.0.0:8000/api/v1/auth/sign-in -- You need to use this endpoint firstly to get access for other endpoints. In body you need to write user login and password like that:
+1. http://0.0.0.0:8000/api/v1/auth/sign-in (POST) -- You need to use this endpoint firstly to get access for other endpoints. In body you need to write user login and password like that:
    {
    "login": "oleg",
    "password": "pass1"
@@ -37,7 +37,7 @@ Responses:
 3. status code -- 500, response body -- error (some internal issue)
 
 
-2. http://localhost:8000/api/v1/currency/rate?date=2024-10-15 -- This endpoint you can use to get usd-rub rate in specific day. This day you have to specify in query parameter after date= in format yyyy-mm-dd.
+2. http://localhost:8000/api/v1/currency/rate?date=2024-10-15 (GET) -- This endpoint you can use to get usd-rub rate in specific day. This day you have to specify in query parameter after date= in format yyyy-mm-dd.
 
 Responses:
 1. status code -- 200, response body -- exchange usd rate to rub.
@@ -48,7 +48,7 @@ Responses:
 5. status code -- 500, response body -- error (some internal issue)
 
 
-3. http://localhost:8000/api/v1/currency/history?first_date=2024-10-15&last_date=2024-10-15 -- This endpoint you can use to get exchange rate history between to dates including those days. Like in example above you have to specify those day in query parameters.
+3. http://localhost:8000/api/v1/currency/history?first_date=2024-10-15&last_date=2024-10-15 (GET) -- This endpoint you can use to get exchange rate history between to dates including those days. Like in example above you have to specify those day in query parameters.
 
 Responses:
 1. status code -- 200, response body -- exchange usd rate to rub changes history.

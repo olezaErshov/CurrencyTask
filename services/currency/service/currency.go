@@ -8,6 +8,11 @@ import (
 )
 
 func (s service) GetCurrencyByDate(ctx context.Context, date string) (float64, error) {
+	err := validateDate(date)
+	if err != nil {
+		return 0, err
+	}
+
 	rate, err := s.repository.GetCurrencyByDate(ctx, date)
 	if err != nil {
 		log.Println("getCurrencyByDate service err:", err)
@@ -17,6 +22,11 @@ func (s service) GetCurrencyByDate(ctx context.Context, date string) (float64, e
 }
 
 func (s service) GetRateHistory(ctx context.Context, firstDate, lastDate string) ([]entity.Currency, error) {
+	err := validateDates(firstDate, lastDate)
+	if err != nil {
+		return nil, err
+	}
+
 	rateHistory, err := s.repository.GetRateHistory(ctx, firstDate, lastDate)
 	if err != nil {
 		log.Println("getCurrencyByDate service err:", err)
