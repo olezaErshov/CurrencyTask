@@ -9,8 +9,14 @@ type ServerConfig struct {
 	Port int
 }
 
+type UrlsConfig struct {
+	AuthGenerator   string
+	CurrencyService string
+}
+
 type Config struct {
 	Server ServerConfig
+	Urls   UrlsConfig
 }
 
 func NewConfig() (Config, error) {
@@ -25,6 +31,10 @@ func NewConfig() (Config, error) {
 		Server: ServerConfig{
 			Host: viper.GetString("server.host"),
 			Port: viper.GetInt("server.port"),
+		},
+		Urls: UrlsConfig{
+			AuthGenerator:   viper.GetString("url.auth_generator"),
+			CurrencyService: viper.GetString("url.currency_service"),
 		},
 	}, nil
 }

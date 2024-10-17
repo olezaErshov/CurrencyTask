@@ -47,6 +47,7 @@ func (w *Worker) Run() {
 
 func (w *Worker) getNextRunTime(currentTime time.Time) time.Time {
 	nextRun := time.Date(currentTime.Year(), currentTime.Month(), currentTime.Day(), w.RunTimeHour, w.RunTimeMinute, 0, 0, currentTime.Location())
+	log.Println("worker run time:", nextRun.String())
 
 	if currentTime.After(nextRun) {
 		nextRun = nextRun.Add(24 * time.Hour)
@@ -77,7 +78,7 @@ func (w *Worker) getCurrencyData() {
 	currencyData.Rate = currencyResp.Rates["usd"]
 	currencyData.Date = currencyResp.Date
 
-	err = w.currencyService.SaveTodaysCurrency(context.TODO(), currencyData)
+	err = w.currencyService.SaveTodaysCurrency(context.Background(), currencyData)
 	log.Println("data was gotten successfully")
 	if err != nil {
 		return

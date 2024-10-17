@@ -4,7 +4,7 @@ CREATE TABLE currency (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
     rate DECIMAL(20, 10) NOT NULL,
-    date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    date TIMESTAMP  UNIQUE
 );
 -- +goose StatementEnd
 

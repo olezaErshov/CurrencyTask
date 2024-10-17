@@ -7,11 +7,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gin-gonic/gin"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type tokenResponse struct {
@@ -24,8 +25,8 @@ func (h Handler) signIn(c *gin.Context) {
 
 	var input entity.User
 	if err := c.ShouldBind(&input); err != nil {
-		log.Println("SignIn handler error:", err)
-		errorText(c.Writer, "Something went wrong", http.StatusBadRequest)
+		log.Println("signIn handler error:", err)
+		errorText(c.Writer, "something went wrong", http.StatusBadRequest)
 		return
 	}
 
@@ -33,19 +34,19 @@ func (h Handler) signIn(c *gin.Context) {
 	if err != nil {
 		switch {
 		case errors.Is(err, errorsx.UserDoesNotExistError):
-			errorText(c.Writer, "User not found", http.StatusNotFound)
+			errorText(c.Writer, "user not found", http.StatusNotFound)
 			return
 		default:
-			log.Println("SignIn handler error:", err)
-			errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
+			log.Println("signIn handler error:", err)
+			errorText(c.Writer, "something went wrong", http.StatusInternalServerError)
 			return
 		}
 	}
-	url := fmt.Sprintf("http://auth-generator:8080/generate?login=%s", user.Login)
+	url := fmt.Sprintf("%s/generate?login=%s", h.cfg.AuthGenerator, user.Login)
 
 	respBody, err := requestInAuthService(ctx, url)
 	if err != nil {
-		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
+		errorText(c.Writer, "something went wrong", http.StatusInternalServerError)
 		return
 	}
 
@@ -55,8 +56,8 @@ func (h Handler) signIn(c *gin.Context) {
 
 	j, err := json.Marshal(response)
 	if err != nil {
-		log.Println("SignIn handler error:", err)
-		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
+		log.Println("signIn handler error:", err)
+		errorText(c.Writer, "something went wrong", http.StatusInternalServerError)
 		return
 	}
 
@@ -66,8 +67,8 @@ func (h Handler) signIn(c *gin.Context) {
 	c.Writer.WriteHeader(http.StatusOK)
 	_, err = c.Writer.Write(j)
 	if err != nil {
-		log.Println("SignIn handler error:", err)
-		errorText(c.Writer, "Something went wrong", http.StatusInternalServerError)
+		log.Println("signIn handler error:", err)
+		errorText(c.Writer, "something went wrong", http.StatusInternalServerError)
 		return
 	}
 }
@@ -84,7 +85,7 @@ func requestInAuthService(ctx context.Context, url string) ([]byte, error) {
 		return nil, err
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Println("requestInAuthService error:", err)
 		return nil, err
